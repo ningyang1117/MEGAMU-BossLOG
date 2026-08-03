@@ -2,7 +2,7 @@
 
 Google Apps Script project for syncing the MEGAMU boss log into a Google Sheets workbook.
 
-The script fetches MEGAMU boss-kill data, writes a raw `BOSS_LOG` tab, and keeps timezone-specific summary tabs updated for Beijing, Sweden, and Brazil/BRT.
+The script fetches MEGAMU boss-kill data, keeps a persistent `BOSS_LOG` history, and updates timezone-specific summary tabs for Beijing, Sweden, and Brazil/BRT.
 
 ## What It Does
 
@@ -11,18 +11,21 @@ The script fetches MEGAMU boss-kill data, writes a raw `BOSS_LOG` tab, and keeps
 - Supports both observed source date formats:
   - `dd/MM/yyyy HH:mm:ss`
   - `yyyy-MM-dd HH:mm:ss`
-- Writes parsed rows into `BOSS_LOG`.
+- Inserts only previously unseen events into `BOSS_LOG`.
+- Retains events after they roll off MEGAMU's current 500-row page.
+- Deduplicates by kill time, monster, player, server, and map.
 - Calculates respawn times for supported bosses.
 - Updates:
   - `Summary` for Beijing time
   - `Summary(SE)` for Sweden time
   - `Summary(BR)` for Brazil/BRT time
 - Keeps cached last-good source data if all live sources fail.
-- Avoids clearing `BOSS_LOG` when a fetch fails.
+- Never clears or replaces existing `BOSS_LOG` history.
 
 ## Files
 
 - `Code.gs`: main Google Apps Script source.
+- `History.gs`: persistent history and event deduplication.
 - `appsscript.json`: Apps Script manifest.
 - `.clasp.json.example`: example clasp config. Copy to `.clasp.json` locally if you want to push to a specific Apps Script project.
 - `docs/setup.md`: setup and import instructions.
@@ -44,7 +47,8 @@ After copying the template:
 2. Open `Extensions -> Apps Script`.
 3. Run `refreshBossLog` once.
 4. Authorize the script when prompted.
-5. Run `setAutoRefreshEvery5min` if you want automatic refresh.
+5. Confirm that an unchanged second refresh adds no duplicate rows.
+6. Run `setAutoRefreshEvery5min` if you want automatic refresh.
 
 ## Developer Reuse Path With clasp
 
