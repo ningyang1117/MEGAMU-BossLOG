@@ -5,7 +5,8 @@
 // - Validate real markdown boss-log table before accepting
 // - Cloudflare/CAPTCHA detection
 // - Cache last-good text (DocumentProperties)
-// - DO NOT clear BOSS_LOG on failure
+// - Preserve every unique row already stored in BOSS_LOG
+// - Insert only new rows; never replace history
 // - Write refresh/failure status to:
 //   Summary!B2 / A2       = Beijing
 //   Summary(SE)!B2 / A2   = Sweden
@@ -74,6 +75,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Boss Log')
     .addItem('Refresh now', 'refreshBossLog')
+    .addItem('Repair stored respawns', 'repairStoredRespawns')
     .addToUi();
 }
 
@@ -96,19 +98,10 @@ function refreshBossLog() {
       throw new Error('Parsed 0 rows (maybe blocked/HTML). Keeping existing sheet data.');
     }
 
-    // 3) Write to BOSS_LOG ONLY when we have valid rows
-    let sh = ss.getSheetByName('BOSS_LOG');
-    if (!sh) sh = ss.insertSheet('BOSS_LOG');
-
-    sh.clear();
-    sh.getRange(1, 1, 1, 9).setValues([[
-      'Kill (Brazil/BRT)', 'Monster', 'Player', 'Server', 'Map',
-      'Respawn hours', 'Respawn (Brazil/BRT)', 'Respawn (Sweden)', 'Respawn (Beijing)'
-    ]]);
-
-    sh.getRange(2, 1, parsed.rows.length, 9).setValues(parsed.rows);
-    sh.getRange(2, 9, parsed.rows.length, 1).setNumberFormat('yyyy/MM/dd HH:mm:ss'); // I col
-    sh.autoResizeColumns(1, 9);
+    // 3) Keep BOSS_LOG as persistent history and insert only unseen events.
+    const sh = ensureBossLogSheet_(ss);
+    prependNewBossLogRows_(sh, parsed.rows);
+    repairStoredRespawnsIfNeeded_(sh);
 
     SpreadsheetApp.flush();
 
@@ -339,9 +332,8 @@ function parseBossLogMarkdownTable_(text) {
     const server  = cells[3];
     const map     = cells[4];
 
-    // Hours lookup with alias fallback
-    let h = HOURS[monster];
-    if (h == null && ALIAS[monster]) h = HOURS[ALIAS[monster]];
+    // Hours lookup also enforces boss-specific map eligibility.
+    const h = getRespawnHours_(monster, map);
 
     // Compute respawn UTC (precise to the second; avoid FP drift)
     const respawnUTC = (h != null)

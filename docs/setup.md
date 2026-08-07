@@ -18,7 +18,8 @@ https://docs.google.com/spreadsheets/d/1nKGlU1-hYGLiy-wgKcekzkeWUr2W1IgJ2PsJVAti
 4. Select `refreshBossLog`.
 5. Click `Run` and approve permissions.
 6. Return to the spreadsheet and confirm `BOSS_LOG` has current rows.
-7. Optional: run `setAutoRefreshEvery5min` to create a time trigger.
+7. Run `refreshBossLog` again and confirm an unchanged source adds no duplicate rows.
+8. Optional: run `setAutoRefreshEvery5min` to create a time trigger.
 
 ## Option B: Import From GitHub With clasp
 
@@ -86,3 +87,6 @@ To stop automatic refresh:
 ```text
 stopAutoRefresh
 ```
+
+The refresh keeps all previously stored events and inserts new ones below the
+`BOSS_LOG` header. Do not replace the sheet with a fixed 500-row import.
