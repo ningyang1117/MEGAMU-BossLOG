@@ -75,6 +75,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Boss Log')
     .addItem('Refresh now', 'refreshBossLog')
+    .addItem('Repair stored respawns', 'repairStoredRespawns')
     .addToUi();
 }
 
@@ -99,7 +100,8 @@ function refreshBossLog() {
 
     // 3) Keep BOSS_LOG as persistent history and insert only unseen events.
     const sh = ensureBossLogSheet_(ss);
-    const history = prependNewBossLogRows_(sh, parsed.rows);
+    prependNewBossLogRows_(sh, parsed.rows);
+    repairStoredRespawnsIfNeeded_(sh);
 
     SpreadsheetApp.flush();
 
@@ -330,9 +332,8 @@ function parseBossLogMarkdownTable_(text) {
     const server  = cells[3];
     const map     = cells[4];
 
-    // Hours lookup with alias fallback
-    let h = HOURS[monster];
-    if (h == null && ALIAS[monster]) h = HOURS[ALIAS[monster]];
+    // Hours lookup also enforces boss-specific map eligibility.
+    const h = getRespawnHours_(monster, map);
 
     // Compute respawn UTC (precise to the second; avoid FP drift)
     const respawnUTC = (h != null)

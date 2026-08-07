@@ -14,7 +14,8 @@ The script fetches MEGAMU boss-kill data, keeps a persistent `BOSS_LOG` history,
 - Inserts only previously unseen events into `BOSS_LOG`.
 - Retains events after they roll off MEGAMU's current 500-row page.
 - Deduplicates by kill time, monster, player, server, and map.
-- Calculates respawn times for supported bosses.
+- Calculates respawn times for supported bosses only on eligible maps.
+- Keeps temporary-event kills in history without letting off-map kills affect respawn summaries.
 - Updates:
   - `Summary` for Beijing time
   - `Summary(SE)` for Sweden time
@@ -26,6 +27,7 @@ The script fetches MEGAMU boss-kill data, keeps a persistent `BOSS_LOG` history,
 
 - `Code.gs`: main Google Apps Script source.
 - `History.gs`: persistent history and event deduplication.
+- `RespawnRules.gs`: boss-specific map eligibility and stored-history repair.
 - `appsscript.json`: Apps Script manifest.
 - `.clasp.json.example`: example clasp config. Copy to `.clasp.json` locally if you want to push to a specific Apps Script project.
 - `docs/setup.md`: setup and import instructions.

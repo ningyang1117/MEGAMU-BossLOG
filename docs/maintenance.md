@@ -69,3 +69,32 @@ node tests/boss_log_history.test.js
 Respawn windows are configured in `HOURS` inside `Code.gs`.
 
 Add aliases in `ALIAS` when the website changes a monster name spelling.
+
+## Boss Map Eligibility
+
+Boss-specific map allowlists are configured in `RESPAWN_ALLOWED_MAPS` inside
+`RespawnRules.gs`:
+
+| Boss | Eligible map |
+| --- | --- |
+| Core Magriffy | Nars |
+| God of Darkness | Swamp of Darkness |
+| Lord of Ferea | Ferea |
+| Lord Silvester | Urk Mountain |
+| Nightmare | Kanturu |
+| Nix | Nixies Lake |
+| Selupan | Raklion |
+
+Aliases inherit the canonical boss rule. Off-map temporary-event kills remain
+in `BOSS_LOG`, but columns F:I stay blank so the Summary pivots ignore them.
+
+When a map rule changes, bump `RESPAWN_MAP_RULES_VERSION`. The next refresh
+clears now-ineligible stored respawn values once. To force the same repair
+manually, run `repairStoredRespawns` or choose `Boss Log -> Repair stored respawns`.
+
+Run both regression tests after changing parser, history, or map rules:
+
+```bash
+node tests/boss_log_history.test.js
+node tests/respawn_map_rules.test.js
+```
