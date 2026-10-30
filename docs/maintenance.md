@@ -70,6 +70,14 @@ Respawn windows are configured in `HOURS` inside `Code.gs`.
 
 Add aliases in `ALIAS` when the website changes a monster name spelling.
 
+Ferea uses `340399 / 3600` hours (94h 33m 19s), the shortest same-server
+Ferea-map kill interval in the supplied 2026-10-23 through 2026-10-30 records.
+This is an observed kill interval, not a guaranteed spawn time.
+
+After changing Ferea's hours, run `recalculateFereaRespawns` once in Apps Script.
+It updates only F:I of stored Ferea rows, including clearing off-map respawns.
+An ordinary refresh inserts unseen events and does not recalculate old rows.
+
 ## Boss Map Eligibility
 
 Boss-specific map allowlists are configured in `RESPAWN_ALLOWED_MAPS` inside
@@ -92,9 +100,10 @@ When a map rule changes, bump `RESPAWN_MAP_RULES_VERSION`. The next refresh
 clears now-ineligible stored respawn values once. To force the same repair
 manually, run `repairStoredRespawns` or choose `Boss Log -> Repair stored respawns`.
 
-Run both regression tests after changing parser, history, or map rules:
+Run the regression tests after changing parser, history, or map rules:
 
 ```bash
 node tests/boss_log_history.test.js
 node tests/respawn_map_rules.test.js
+node tests/ferea_recalculation.test.js
 ```

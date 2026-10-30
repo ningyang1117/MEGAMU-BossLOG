@@ -50,8 +50,8 @@ const HOURS = {
   'Nightmare':       40.96,
   'Nix':             100.4639,
   'Lord Silvester':  93.13,
-  'Lord Ferea':      94.8564,
-  'Lord of Ferea':   94.8564,
+  'Lord Ferea':      340399 / 3600,
+  'Lord of Ferea':   340399 / 3600,
   'Core Magriffy':   84.6,
   'Core Magrifty':   84.6,
   'God of Darkness': 104.0483

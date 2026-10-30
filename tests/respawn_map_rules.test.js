@@ -26,7 +26,7 @@ function evaluate(expression) {
 const nativeMapCases = [
   ['Core Magriffy', 'Nars', 84.6],
   ['God of Darkness', 'Swamp of Darkness', 104.0483],
-  ['Lord of Ferea', 'Ferea', 94.8564],
+  ['Lord of Ferea', 'Ferea', 340399 / 3600],
   ['Lord Silvester', 'Urk Mountain', 93.13],
   ['Nightmare', 'Kanturu', 40.96],
   ['Nix', 'Nixies Lake', 100.4639],
@@ -46,7 +46,7 @@ assert.equal(evaluate("getRespawnHours_('Selupan', 'Lorencia')"), null);
 assert.equal(evaluate("getRespawnHours_('Selupan', 'Devias')"), null);
 assert.equal(evaluate("getRespawnHours_('Nightmare', 'Noria')"), null);
 assert.equal(evaluate("getRespawnHours_('Nix', 'Crywolf')"), null);
-assert.equal(evaluate("getRespawnHours_('Lord Ferea', 'Ferea')"), 94.8564);
+assert.equal(evaluate("getRespawnHours_('Lord Ferea', 'Ferea')"), 340399 / 3600);
 assert.equal(evaluate("getRespawnHours_('Core Magrifty', 'Nars')"), 84.6);
 assert.equal(evaluate("getRespawnHours_('God Darkness', 'Swamp of Darkness')"), 104.0483);
 

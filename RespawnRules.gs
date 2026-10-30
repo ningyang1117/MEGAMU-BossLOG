@@ -108,3 +108,66 @@ function clearDisallowedStoredRespawns_(sh) {
 
   return rangesToClear.length;
 }
+
+// Run after changing Ferea's hours: normal refresh preserves existing rows.
+function recalculateFereaRespawns() {
+  const lock = LockService.getDocumentLock();
+  lock.waitLock(30 * 1000);
+
+  try {
+    const sh = SpreadsheetApp.getActive().getSheetByName('BOSS_LOG');
+    if (!sh) throw new Error('BOSS_LOG sheet not found.');
+
+    const updated = recalculateStoredFereaRespawns_(sh);
+    SpreadsheetApp.flush();
+    console.log('Recalculated Ferea respawns: ' + updated);
+    return updated;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function recalculateStoredFereaRespawns_(sh) {
+  const rowCount = Math.max(0, sh.getLastRow() - 1);
+  if (!rowCount) return 0;
+
+  const rows = sh.getRange(2, 1, rowCount, 5).getDisplayValues();
+  const updates = [];
+
+  // Prepare every value before writing so a malformed kill time cannot cause
+  // a partial recalculation. Only F:I of Ferea rows are written.
+  rows.forEach((row, index) => {
+    const monster = normalizeBossLogKeyPart_(row[1]);
+    if ((ALIAS[monster] || monster) !== 'Lord of Ferea') return;
+
+    const hours = getRespawnHours_(monster, row[4]);
+    let values = ['', '', '', ''];
+    if (hours != null) {
+      const killText = normalizeBossLogKillText_(row[0]);
+      const kill = Utilities.parseDate(killText, TZ_BR, 'dd/MM/yyyy HH:mm:ss');
+      if (Utilities.formatDate(kill, TZ_BR, 'dd/MM/yyyy HH:mm:ss') !== killText) {
+        throw new Error('Invalid Ferea kill time at row ' + (index + 2));
+      }
+      const respawn = new Date(kill.getTime() + Math.round(hours * 3600 * 1000));
+      values = [
+        hours,
+        Utilities.formatDate(respawn, TZ_BR, 'yyyy/MM/dd HH:mm:ss'),
+        Utilities.formatDate(respawn, TZ_SE, 'yyyy/MM/dd HH:mm:ss'),
+        respawn
+      ];
+    }
+
+    const sheetRow = index + 2;
+    const previous = updates[updates.length - 1];
+    if (previous && previous.row + previous.values.length === sheetRow) {
+      previous.values.push(values);
+    } else {
+      updates.push({ row: sheetRow, values: [values] });
+    }
+  });
+
+  updates.forEach(update => {
+    sh.getRange(update.row, 6, update.values.length, 4).setValues(update.values);
+  });
+  return updates.reduce((count, update) => count + update.values.length, 0);
+}
